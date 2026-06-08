@@ -116,7 +116,7 @@ if model is not None and scaler is not None:
     input_data['Weekend_Afternoon'] = 1.0 if (input_data['Is_Weekend'].values[0] == 1.0) else 0.0
     input_data['Is_Hot_Sunny'] = 1.0 if (temp > 25 and "Sunny" in weather_type) else 0.0
 
-    # 觸發預測按鈕
+       # 觸發預測按鈕
     if st.button("🚀 啟動 AI 大腦一鍵預測", type="primary"):
         try:
             # 🌟 標準化縮放修正
@@ -127,8 +127,9 @@ if model is not None and scaler is not None:
             scaled_transformed = scaler.transform(scaled_features)
             input_data[scale_cols] = scaled_transformed
             
-            # 丟進全場冠軍 XGBoost 進行預測
-            prediction = model.predict(input_data)
+            # 丟進全場冠軍 XGBoost 進行預測 (🌟 已經過安全防爆轉化修正)
+            prediction_array = model.predict(input_data)
+            prediction = float(prediction_array[0]) # 提取第一個元素並轉為純浮點數，防範一切版本不相容
             
             # 成功噴拉炮呈現
             st.balloons()
