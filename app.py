@@ -4,7 +4,7 @@ import numpy as np
 import joblib
 
 # ==========================================
-# 1. 網頁基本設定
+# 1. 網頁基本設定 (標題、網頁圖示、版面配置)
 # ==========================================
 st.set_page_config(
     page_title="咖啡門市 AI 銷售預報系統",
@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 st.title("☕ 咖啡門市 AI 智慧備料與銷售預報系統")
-st.markdown("這是基於 **XGBoost + GA 遺傳演算法** 優化後的黃金模型。")
+st.markdown("這是基於 **XGBoost + GA 遺傳演算法** 優化後的黃金模型，輸入明日營運條件，即可一鍵估算最佳備料杯數。")
 st.write("---")
 
 # ==========================================
@@ -34,11 +34,10 @@ if model is None or scaler is None:
     st.error("❌ 讀取模型組件 (.pkl) 時發生版本不相容或找不到檔案。請點選右下角 Manage App 查看詳細錯誤日誌。")
 
 # ==========================================
-# 3. 網頁前端介面：店長輸入區域
+# 3. 網頁前端介面：店長輸入區域 (兩欄式排版)
 # ==========================================
 st.subheader("📊 請輸入明日營運與氣候預測條件：")
 
-# 這裡擴充了店長可輸入的完整維度，讓預測極度精準
 col1, col2 = st.columns(2)
 
 with col1:
@@ -65,10 +64,10 @@ with col2:
 st.write("---")
 
 # ==========================================
-# 4. 後端 AI 計算與 31 特徵精準對齊 (100% 根除 Mismatch 報錯)
+# 4. 後端 AI 計算與 31 特徵精準對齊 (完美根除 Mismatch 報錯)
 # ==========================================
 if model is not None and scaler is not None:
-    # 🌟 核心修復：這群欄位順序必須與錯誤訊息中的模型預期完全一致，一字不差！
+    # 🌟 核心修復：31個特徵順序必須與模型在 Colab 訓練時完全一致，一字不差！
     feature_columns = [
         'Temperature_C', 'Is_Holiday', 'Staff_Count', 'Price', 'Ad_Impressions', 'Competitor_Price',
         'Hour', 'Month', 'Is_Weekend', 'Sales_Lag_1', 'Sales_Lag_2', 'Sales_Roll_Mean_3',
@@ -79,8 +78,8 @@ if model is not None and scaler is not None:
         'Coffee_Type_Americano', 'Coffee_Type_Cappuccino', 'Coffee_Type_Espresso', 'Coffee_Type_Latte', 'Coffee_Type_Mocha'
     ]
     
-    # 建立數據結構
-    input_data = pd.DataFrame(0.0, index=, columns=feature_columns)
+    # 建立單筆資料 DataFrame (🌟 index 已修正為 [0])
+    input_data = pd.DataFrame(0.0, index=[0], columns=feature_columns)
     
     # 填入使用者輸入的基礎特徵
     input_data['Temperature_C'] = float(temp)
@@ -109,7 +108,7 @@ if model is not None and scaler is not None:
     # 時段固定模擬下午茶 (對應多數爆單場景)
     input_data['Time_Slot_Afternoon'] = 1.0
     
-    # 咖啡品類平均分配權重 (消除單一咖啡影響，專注看大趨勢)
+    # 咖啡品類平均分配權重 (設定代表性主力拿鐵咖啡)
     input_data['Coffee_Type_Latte'] = 1.0
     
     # 進階交互特徵邏輯計算
@@ -129,7 +128,7 @@ if model is not None and scaler is not None:
             input_data[scale_cols] = scaled_transformed
             
             # 丟進全場冠軍 XGBoost 進行預測
-            prediction = model.predict(input_data)
+            prediction = model.predict(input_data)[0]
             
             # 成功噴拉炮呈現
             st.balloons()
