@@ -100,7 +100,7 @@ if model is not None and scaler is not None:
     if "Rainy" in weather_type: input_data['Weather_Rainy'] = 1.0
     if "Sunny" in weather_type: input_data['Weather_Sunny'] = 1.0
     
-    # 促銷活動 One-Hot 填入
+       # 促銷活動 One-Hot 填入
     if buy1get1: input_data['Promotion_Buy1Get1'] = 1.0
     if discount_20: input_data['Promotion_Discount_20'] = 1.0
     if member_only: input_data['Promotion_Member_Only'] = 1.0
@@ -111,9 +111,9 @@ if model is not None and scaler is not None:
     # 咖啡品類平均分配權重 (設定代表性主力拿鐵咖啡)
     input_data['Coffee_Type_Latte'] = 1.0
     
-    # 進階交互特徵邏輯計算
+    # 進階交互特徵邏輯計算 (🌟 安全修正版)
     input_data['Rain_and_Promo'] = 1.0 if ("Rainy" in weather_type and (buy1get1 or discount_20 or member_only)) else 0.0
-    input_data['Weekend_Afternoon'] = 1.0 if (input_data['Is_Weekend'] == 1.0) else 0.0
+    input_data['Weekend_Afternoon'] = 1.0 if (input_data['Is_Weekend'].values[0] == 1.0) else 0.0
     input_data['Is_Hot_Sunny'] = 1.0 if (temp > 25 and "Sunny" in weather_type) else 0.0
 
     # 觸發預測按鈕
@@ -128,7 +128,7 @@ if model is not None and scaler is not None:
             input_data[scale_cols] = scaled_transformed
             
             # 丟進全場冠軍 XGBoost 進行預測
-            prediction = model.predict(input_data)[0]
+            prediction = model.predict(input_data)
             
             # 成功噴拉炮呈現
             st.balloons()
